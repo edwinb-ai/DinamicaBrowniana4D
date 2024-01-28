@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "functionsl.h"
-#include "random_s.h"
+#include "pseudorng.h"
 
 int main(int argc, char const *argv[])
 {
@@ -26,8 +26,7 @@ int main(int argc, char const *argv[])
     unsigned int ncp = atoi(argv[3]);
     // Paso de tiempo
     double d_tiempo = atof(argv[4]);
-    int iseed = atoi(argv[5]);
-    int thermal = atoi(argv[6]);
+    int thermal = atoi(argv[5]);
 
     // Tamaño de caja
     double l_caja = pow(n_part / rho, 1.0/4.0);
@@ -40,13 +39,18 @@ int main(int argc, char const *argv[])
     printf("Distance media entre partículas: %f\n", pow(rho, -1.0/4.0));
     printf("Radio de corte: %f\n", radio_c);
 
-    // Inicializar el RNG
-    double xtmp = 0.0;
-    init_genrand(iseed);
-    for (int i = 0; i<=2000; i++)
-    {
-        xtmp = genrand_real1();
-    }
+    // Inicializar el RNG, los siguientes comandos hacen que las semillas
+    // siempre sean diferentes
+    // Semilla para el PRNG
+    unsigned long seed;
+    // Abrimos el PRNG de Linux, tambien puede ser un numero fijo
+    FILE *fp = fopen("/dev/urandom", "r");
+    int tmp = fread(&seed, 1, sizeof(unsigned long), fp);
+    if (tmp != sizeof(unsigned long)) printf ("error with seed\n");
+    fclose(fp);
+    // Mostramos la semilla para guardarla despues, por reproducibilidad
+    printf("Semilla: %u\n", (int)(seed));
+    init_genrand(seed);
 
     // Inicializar los arreglos
     double *x = calloc(mp, sizeof(double));
@@ -152,7 +156,7 @@ int main(int argc, char const *argv[])
         }
     }
     // Leer el nombre del archivo de la linea de comandos
-    f_gr = fopen(argv[7], "w");
+    f_gr = fopen(argv[6], "w");
     double *r = calloc(nm, sizeof(double));
     double dv = 0.0;
     // double hraux = 0.0;
@@ -168,7 +172,7 @@ int main(int argc, char const *argv[])
 
     // Llamar la función para el desplazamiento cuadrático medio
     difusion(nprom, n_part, cfx, cfy, cfz, cfw, wt);
-    f_wt = fopen(argv[8], "w");
+    f_wt = fopen(argv[7], "w");
     for (int i = 0; i < ncp/10; i++)
     {
         fprintf(f_wt, "%.10f %.10f\n", t[i], wt[i]);

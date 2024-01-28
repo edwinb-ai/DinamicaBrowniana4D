@@ -83,7 +83,7 @@ double* fw, const int num_part, const double box_l)
         fw[i] = 0.0;
     }
 
-    #pragma omp parallel for num_threads(3) default(shared) private(xij,yij,zij,wij,i,j,rij) reduction(+:ener)
+    // #pragma omp parallel for num_threads(3) default(shared) private(xij,yij,zij,wij,i,j,rij) reduction(+:ener)
     for (i = 0; i < num_part; i++)
     {
         for (j = i+1; j < num_part-1; j++)
@@ -150,10 +150,10 @@ const double box_l, const int num_part, const int pbc)
 
     for (int i = 0; i < num_part; i++)
     {
-        dx = sigma * gasdev();
-        dy = sigma * gasdev();
-        dz = sigma * gasdev();
-        dw = sigma * gasdev();
+        dx = sigma * norm();
+        dy = sigma * norm();
+        dz = sigma * norm();
+        dw = sigma * norm();
 
         x[i] += fx[i]*dtt + dx;
         y[i] += fy[i]*dtt + dy;
